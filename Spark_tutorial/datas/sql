@@ -1,0 +1,27 @@
+
+select
+    area,
+    product_name,
+    clickCnt
+from (
+      select
+          area,
+          product_name,
+          clickCnt
+          rank() over (partition by area order by clickCnt desc) rk
+      from (
+            select
+                area,
+                product_name,
+                count(*) clickCnt
+            from (
+                  select
+                      uva.*,
+                      pi.product_name,
+                      ci.area
+                  from user_visit_action uva
+                  join product_info pi on uva.click_product_id = pi.product_id
+                  join city_info ci on uva.city_id = ci.city_id
+                  where click_product_id != -1) t1
+            group by area, product_name) t2) t3
+where rk <= 3;
